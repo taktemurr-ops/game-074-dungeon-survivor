@@ -17,7 +17,10 @@ sleep 3
 adb exec-out screencap -p > "smoke/$NAME-after.png"
 adb logcat -d > "smoke/$NAME-logcat.txt"
 if grep -E "FATAL EXCEPTION|ANR in $PKG|// CRASH" "smoke/$NAME-logcat.txt" "smoke/$NAME-monkey.txt"; then
-  echo "Crash or ANR detected"; exit 1
+  echo "Crash or ANR detected"
+  grep -A40 "FATAL EXCEPTION" "smoke/$NAME-logcat.txt" | head -120 || true
+  grep -A40 "// CRASH" "smoke/$NAME-monkey.txt" | head -60 || true
+  exit 1
 fi
 if ! adb shell pidof "$PKG" > /dev/null; then
   echo "App process is not running"; exit 1
