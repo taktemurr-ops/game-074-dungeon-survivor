@@ -30,7 +30,7 @@ class DailyScreen extends ConsumerWidget {
         Text(app.t('streak', {'n': s.loginStreak})),
         const SizedBox(height: 8),
         SizedBox(
-          height: 92,
+          height: 100,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: DailySystems.loginCycle.length,
@@ -49,12 +49,16 @@ class DailyScreen extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                   border: isToday ? Border.all(color: Theme.of(c).colorScheme.primary, width: 2) : null,
                 ),
-                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                  Text(app.t('day_n', {'n': i + 1}), style: const TextStyle(fontSize: 12)),
-                  Icon(r.gems > 0 ? Icons.diamond : Icons.monetization_on,
-                      color: r.gems > 0 ? Colors.cyan : Colors.amber),
-                  Text('${r.coins}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                ]),
+                // scaleDown: the tile never overflows, whatever the font scale.
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(app.t('day_n', {'n': i + 1}), style: const TextStyle(fontSize: 12)),
+                    Icon(r.gems > 0 ? Icons.diamond : Icons.monetization_on,
+                        color: r.gems > 0 ? Colors.cyan : Colors.amber),
+                    Text('${r.coins}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ]),
+                ),
               );
             },
           ),
@@ -258,15 +262,25 @@ class _WheelPainter extends CustomPainter {
       final paint = Paint()..color = HSLColor.fromAHSL(1, i * 360 / n, 0.7, 0.55).toColor();
       canvas.drawArc(rect, -math.pi / 2 + i * sweep, sweep, true, paint);
       final reward = DailySystems.wheelSlices[i];
-      final label = reward.coins > 0
-          ? '${reward.coins}'
+      // Material icon glyphs (bundled font) instead of emoji: emoji need a
+      // system/web font that is not always available (web, older Android).
+      final (IconData? icon, int amount) = reward.coins > 0
+          ? (null, reward.coins)
           : reward.gems > 0
-              ? '💎${reward.gems}'
+              ? (Icons.diamond, reward.gems)
               : reward.hints > 0
-                  ? '💡${reward.hints}'
-                  : '⚡${reward.boosters}';
+                  ? (Icons.lightbulb, reward.hints)
+                  : (Icons.bolt, reward.boosters);
+      const style = TextStyle(color: Colors.white, fontWeight: FontWeight.bold);
       final tp = TextPainter(
-        text: TextSpan(text: label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        text: TextSpan(style: style, children: [
+          if (icon != null)
+            TextSpan(
+              text: String.fromCharCode(icon.codePoint),
+              style: TextStyle(fontFamily: icon.fontFamily, package: icon.fontPackage, color: Colors.white),
+            ),
+          TextSpan(text: '$amount'),
+        ]),
         textDirection: TextDirection.ltr,
       )..layout();
       final a = -math.pi / 2 + (i + 0.5) * sweep;
