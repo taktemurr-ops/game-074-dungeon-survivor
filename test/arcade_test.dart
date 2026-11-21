@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:game_074_dungeon_survivor/core/arcade.dart';
-import 'package:game_074_dungeon_survivor/core/level_plan.dart';
+import 'package:studio_core/core/arcade.dart';
+import 'package:studio_core/core/level_plan.dart';
 import 'package:game_074_dungeon_survivor/game/arena_engine.dart';
 import 'package:game_074_dungeon_survivor/game/rules.dart';
 
